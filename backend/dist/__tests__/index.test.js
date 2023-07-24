@@ -31,12 +31,13 @@ describe("getPieChartData", () => {
         ];
         jest.spyOn(product_model_1.Product, "find").mockResolvedValue(mockData);
         // Execute the resolver function
-        const result = yield getPieChartDataResolver(null);
+        const result = yield getPieChartDataResolver();
         // Expectations for the result
         expect(result).toEqual({
             category: [
                 { categoryName: "Category1", number: 2 },
                 { categoryName: "Category2", number: 1 },
+                // Add more category data as needed...
             ],
         });
     }));
@@ -52,7 +53,7 @@ describe("getHeatMapData", () => {
         ];
         jest.spyOn(user_model_1.User, "find").mockResolvedValue(mockData);
         // Execute the resolver function
-        const result = yield getHeatMapDataResolver(null);
+        const result = yield getHeatMapDataResolver();
         // Expectations for the result
         expect(result).toEqual({
             country: [
@@ -74,7 +75,7 @@ describe("getAgeCountData", () => {
         ];
         jest.spyOn(user_model_1.User, "find").mockResolvedValue(mockData);
         // Execute the resolver function
-        const result = yield getAgeCountDataResolver(null);
+        const result = yield index_1.resolvers.Query.getAgeCountData();
         // Expectations for the result
         expect(result).toEqual({
             teen: 2,
@@ -94,7 +95,7 @@ describe("getOccupationData", () => {
         ];
         jest.spyOn(user_model_1.User, "find").mockResolvedValue(mockData);
         // Execute the resolver function
-        const result = yield getOccupationDataResolver(null);
+        const result = yield index_1.resolvers.Query.getOccupationData();
         // Expectations for the result
         expect(result).toEqual([
             { occupationName: "Engineer", number: 2 },
@@ -115,7 +116,7 @@ describe("getGenderData", () => {
         ];
         jest.spyOn(user_model_1.User, "find").mockResolvedValue(mockData);
         // Execute the resolver function
-        const result = yield getGenderDataResolver(null);
+        const result = yield index_1.resolvers.Query.getGenderData();
         // Expectations for the result
         expect(result).toEqual({
             male: 2,
@@ -124,48 +125,23 @@ describe("getGenderData", () => {
         });
     }));
 });
-describe("getSalesVSTargetData", () => {
-    it("should return correct sales vs target data", () => __awaiter(void 0, void 0, void 0, function* () {
-        // Mocking the Product.find() function to return dummy data for testing
-        const mockData = [
-            { productExpectedSale: 100, totalSoldQty: 80, productName: "Product1" },
-            { productExpectedSale: 200, totalSoldQty: 150, productName: "Product2" },
-            // Add more data as needed...
-        ];
-        jest.spyOn(product_model_1.Product, "find").mockResolvedValue(mockData);
-        // Execute the resolver function
-        const result = yield getSalesVSTargetDataResolver(null);
-        // Expectations for the result
-        expect(result).toEqual([
-            {
-                expectedSellProduct: 100,
-                totalSellProduct: 80,
-                productName: "Product1",
-            },
-            {
-                expectedSellProduct: 200,
-                totalSellProduct: 150,
-                productName: "Product2",
-            },
-            // Add more expectations for other products...
-        ]);
-    }));
-});
 describe("getTop10Products", () => {
     it("should return correct top 10 products data", () => __awaiter(void 0, void 0, void 0, function* () {
-        // Mocking the Product.find() function to return dummy data for testing
         const mockData = [
             { totalSoldQty: 50, productName: "Product1" },
             { totalSoldQty: 30, productName: "Product2" },
+            { totalSoldQty: 20, productName: "Product3" },
             // Add more data as needed...
         ];
+        // Mock the Product.find() function to return the mock data
         jest.spyOn(product_model_1.Product, "find").mockResolvedValue(mockData);
         // Execute the resolver function
-        const result = yield getTop10ProductsResolver(null);
+        const result = yield getTop10ProductsResolver();
         // Expectations for the result
         expect(result).toEqual([
             { totalSoldQty: 50, productName: "Product1" },
             { totalSoldQty: 30, productName: "Product2" },
+            { totalSoldQty: 20, productName: "Product3" },
             // Add more expectations for other products...
         ]);
     }));

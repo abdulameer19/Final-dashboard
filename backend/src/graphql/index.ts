@@ -1,6 +1,6 @@
 import { gql } from "graphql-tag";
-import { User } from "../models/user.model";
-import { Product } from "../models/product.model";
+import { User, IUser } from "../models/user.model";
+import { IProduct, Product } from "../models/product.model";
 import { Order } from "../models/order.model";
 
 const typeDefs = gql`
@@ -69,72 +69,98 @@ const typeDefs = gql`
     getRevenueAnalysisData: [revenueAnalysis]!
   }
 `;
-interface RevenueAnalysis {
-  revenue: number;
-  cost: number;
-  profit: number;
-  month: number;
-  productName: string;
-}
-interface ProductCategory {
-  productCategory: string;
+interface User {
+  userAge: number;
+  occupation: string;
+  gender: string;
+  // Add other properties as needed
 }
 
-interface CategoryData {
-  categoryName: string;
+interface AgeCount {
+  teen: number;
+  adult: number;
+  senior: number;
+}
+
+interface OccupationData {
+  occupationName: string;
   number: number;
 }
 
+interface GenderData {
+  male: number;
+  female: number;
+  other: number;
+}
+interface CategoryInfo {
+  categoryName: string;
+  number: number;
+}
+interface HeatMapData {
+  id: string;
+  value: number;
+}
 const resolvers = {
   Query: {
-    getPieChartData: async (_: any) => {
-      const data = await Product.find();
-      let category: any = [];
+    getPieChartData: async (): Promise<{ category: CategoryInfo[] }> => {
+      const data: IProduct[] | undefined = await Product.find();
 
-      data.forEach((element: any) => {
-        const existingCategory = category.find(
-          (re: any) => re.categoryName === element.productCategory
-        );
+      if (!data) {
+        return { category: [] };
+      }
 
-        if (existingCategory) {
-          existingCategory.number += 1;
-        } else {
-          category.push({
-            categoryName: element.productCategory,
-            number: 1,
-          });
+      const categoryMap: Map<string, number> = new Map();
+
+      data.forEach((element: IProduct) => {
+        const productCategory: string | undefined = element.productCategory;
+
+        if (productCategory !== undefined) {
+          if (categoryMap.has(productCategory)) {
+            categoryMap.set(
+              productCategory,
+              categoryMap.get(productCategory)! + 1
+            );
+          } else {
+            categoryMap.set(productCategory, 1);
+          }
         }
       });
-      return { category: category };
+
+      const category: CategoryInfo[] = Array.from(categoryMap.entries()).map(
+        ([categoryName, number]) => ({
+          categoryName,
+          number,
+        })
+      );
+
+      return { category };
     },
-    getHeatMapData: async (_: any) => {
-      const data = await User.find();
-      let category: any = [];
+    getHeatMapData: async (): Promise<{ country: HeatMapData[] }> => {
+      const data: any[] = await User.find(); // Replace 'User' with the correct type of your data
+
+      const countryMap = new Map<string, number>();
 
       data.forEach((element: any) => {
-        const existingCategory = category.find(
-          (re: any) => re.id === element.countryCode
-        );
-
-        if (existingCategory) {
-          existingCategory.value += 1;
-        } else {
-          category.push({
-            id: element.countryCode,
-            value: 1,
-          });
-        }
+        const countryCode: string = element.countryCode;
+        countryMap.set(countryCode, (countryMap.get(countryCode) || 0) + 1);
       });
-      return { country: category };
+
+      const countryData: HeatMapData[] = Array.from(
+        countryMap,
+        ([id, value]) => ({ id, value })
+      );
+
+      return { country: countryData };
     },
-    getAgeCountData: async (_: any) => {
-      const data = await User.find();
-      const ageCount = {
+
+    getAgeCountData: async (): Promise<AgeCount> => {
+      const data: IUser[] = await User.find();
+      const ageCount: AgeCount = {
         teen: 0,
         adult: 0,
         senior: 0,
       };
-      data.forEach((element: any) => {
+      data.forEach((element) => {
         if (element.userAge >= 13 && element.userAge <= 19) {
           ageCount.teen++;
         } else if (element.userAge > 19 && element.userAge <= 34) {
@@ -145,13 +171,14 @@ const resolvers = {
       });
       return ageCount;
     },
-    getOccupationData: async (_: any) => {
-      const data = await User.find();
-      let category: any = [];
 
-      data.forEach((element: any) => {
+    getOccupationData: async (): Promise<OccupationData[]> => {
+      const data: IUser[] = await User.find();
+      let category: OccupationData[] = [];
+
+      data.forEach((element) => {
         const existingCategory = category.find(
-          (re: any) => re.occupationName === element.occupation
+          (re) => re.occupationName === element.occupation
         );
 
         if (existingCategory) {
@@ -166,44 +193,42 @@ const resolvers = {
       return category;
     },
 
-    getGenderData: async (_: any) => {
-      const data = await User.find();
+    getGenderData: async (): Promise<GenderData> => {
+      const data: IUser[] = await User.find();
       return {
-        male: data.filter((e: any) => e.gender === "Male").length,
-        female: data.filter((e: any) => e.gender === "Female").length,
-        other: data.filter((e: any) => e.gender === "Other").length,
+        male: data.filter((e) => e.gender === "Male").length,
+        female: data.filter((e) => e.gender === "Female").length,
+        other: data.filter((e) => e.gender === "Other").length,
       };
     },
-
-    getSalesVSTargetData: async (_: any) => {
+    getSalesVSTargetData: async () => {
       const data = await Product.find();
-      let returnData: any = [];
-      data.forEach((e: any) => {
-        returnData.push({
-          expectedSellProduct: e.productExpectedSale,
-          totalSellProduct: e.totalSoldQty,
-          productName: e.productName,
-        });
-      });
-
+      const returnData: any[] = data.map((e: any) => ({
+        expectedSellProduct: e.productExpectedSale,
+        totalSellProduct: e.totalSoldQty,
+        productName: e.productName,
+      }));
       return returnData;
     },
 
-    getTop10Products: async (_: any) => {
+    getTop10Products: async () => {
       const data = await Product.find();
       const sortedProducts = data.sort(
         (a: any, b: any) => b.totalSoldQty - a.totalSoldQty
       );
 
-      return sortedProducts.map((e: any) => {
-        return { totalSoldQty: e.totalSoldQty, productName: e.productName };
-      });
+      const top10Products = sortedProducts.slice(0, 10).map((e: any) => ({
+        totalSoldQty: e.totalSoldQty,
+        productName: e.productName,
+      }));
+
+      return top10Products;
     },
 
-    getRevenueAnalysisData: async (_: any) => {
+    getRevenueAnalysisData: async () => {
       const data = await Order.find().populate({ path: "productID" });
 
-      let Analysis: any = [];
+      const Analysis: any[] = [];
       data.forEach((element: any) => {
         const existingCategory = Analysis.find(
           (re: any) => re.month === new Date(element.purchaseDate).getMonth()

@@ -83,41 +83,40 @@ const typeDefs = (0, graphql_tag_1.gql) `
 exports.typeDefs = typeDefs;
 const resolvers = {
     Query: {
-        getPieChartData: (_) => __awaiter(void 0, void 0, void 0, function* () {
+        getPieChartData: () => __awaiter(void 0, void 0, void 0, function* () {
             const data = yield product_model_1.Product.find();
-            let category = [];
+            if (!data) {
+                return { category: [] };
+            }
+            const categoryMap = new Map();
             data.forEach((element) => {
-                const existingCategory = category.find((re) => re.categoryName === element.productCategory);
-                if (existingCategory) {
-                    existingCategory.number += 1;
-                }
-                else {
-                    category.push({
-                        categoryName: element.productCategory,
-                        number: 1,
-                    });
+                const productCategory = element.productCategory;
+                if (productCategory !== undefined) {
+                    if (categoryMap.has(productCategory)) {
+                        categoryMap.set(productCategory, categoryMap.get(productCategory) + 1);
+                    }
+                    else {
+                        categoryMap.set(productCategory, 1);
+                    }
                 }
             });
-            return { category: category };
+            const category = Array.from(categoryMap.entries()).map(([categoryName, number]) => ({
+                categoryName,
+                number,
+            }));
+            return { category };
         }),
-        getHeatMapData: (_) => __awaiter(void 0, void 0, void 0, function* () {
-            const data = yield user_model_1.User.find();
-            let category = [];
+        getHeatMapData: () => __awaiter(void 0, void 0, void 0, function* () {
+            const data = yield user_model_1.User.find(); // Replace 'User' with the correct type of your data
+            const countryMap = new Map();
             data.forEach((element) => {
-                const existingCategory = category.find((re) => re.id === element.countryCode);
-                if (existingCategory) {
-                    existingCategory.value += 1;
-                }
-                else {
-                    category.push({
-                        id: element.countryCode,
-                        value: 1,
-                    });
-                }
+                const countryCode = element.countryCode;
+                countryMap.set(countryCode, (countryMap.get(countryCode) || 0) + 1);
             });
-            return { country: category };
+            const countryData = Array.from(countryMap, ([id, value]) => ({ id, value }));
+            return { country: countryData };
         }),
-        getAgeCountData: (_) => __awaiter(void 0, void 0, void 0, function* () {
+        getAgeCountData: () => __awaiter(void 0, void 0, void 0, function* () {
             const data = yield user_model_1.User.find();
             const ageCount = {
                 teen: 0,
@@ -137,7 +136,7 @@ const resolvers = {
             });
             return ageCount;
         }),
-        getOccupationData: (_) => __awaiter(void 0, void 0, void 0, function* () {
+        getOccupationData: () => __awaiter(void 0, void 0, void 0, function* () {
             const data = yield user_model_1.User.find();
             let category = [];
             data.forEach((element) => {
@@ -154,7 +153,7 @@ const resolvers = {
             });
             return category;
         }),
-        getGenderData: (_) => __awaiter(void 0, void 0, void 0, function* () {
+        getGenderData: () => __awaiter(void 0, void 0, void 0, function* () {
             const data = yield user_model_1.User.find();
             return {
                 male: data.filter((e) => e.gender === "Male").length,
@@ -162,28 +161,27 @@ const resolvers = {
                 other: data.filter((e) => e.gender === "Other").length,
             };
         }),
-        getSalesVSTargetData: (_) => __awaiter(void 0, void 0, void 0, function* () {
+        getSalesVSTargetData: () => __awaiter(void 0, void 0, void 0, function* () {
             const data = yield product_model_1.Product.find();
-            let returnData = [];
-            data.forEach((e) => {
-                returnData.push({
-                    expectedSellProduct: e.productExpectedSale,
-                    totalSellProduct: e.totalSoldQty,
-                    productName: e.productName,
-                });
-            });
+            const returnData = data.map((e) => ({
+                expectedSellProduct: e.productExpectedSale,
+                totalSellProduct: e.totalSoldQty,
+                productName: e.productName,
+            }));
             return returnData;
         }),
-        getTop10Products: (_) => __awaiter(void 0, void 0, void 0, function* () {
+        getTop10Products: () => __awaiter(void 0, void 0, void 0, function* () {
             const data = yield product_model_1.Product.find();
             const sortedProducts = data.sort((a, b) => b.totalSoldQty - a.totalSoldQty);
-            return sortedProducts.map((e) => {
-                return { totalSoldQty: e.totalSoldQty, productName: e.productName };
-            });
+            const top10Products = sortedProducts.slice(0, 10).map((e) => ({
+                totalSoldQty: e.totalSoldQty,
+                productName: e.productName,
+            }));
+            return top10Products;
         }),
-        getRevenueAnalysisData: (_) => __awaiter(void 0, void 0, void 0, function* () {
+        getRevenueAnalysisData: () => __awaiter(void 0, void 0, void 0, function* () {
             const data = yield order_model_1.Order.find().populate({ path: "productID" });
-            let Analysis = [];
+            const Analysis = [];
             data.forEach((element) => {
                 const existingCategory = Analysis.find((re) => re.month === new Date(element.purchaseDate).getMonth());
                 if (existingCategory) {

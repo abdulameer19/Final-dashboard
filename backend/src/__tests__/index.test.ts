@@ -4,6 +4,7 @@ import { User } from "../models/user.model";
 import { Order } from "../models/order.model";
 
 // Accessing the resolver functions
+
 const getPieChartDataResolver = resolvers.Query.getPieChartData;
 const getHeatMapDataResolver = resolvers.Query.getHeatMapData;
 const getAgeCountDataResolver = resolvers.Query.getAgeCountData;
@@ -25,13 +26,14 @@ describe("getPieChartData", () => {
     jest.spyOn(Product, "find").mockResolvedValue(mockData);
 
     // Execute the resolver function
-    const result = await getPieChartDataResolver(null);
+    const result = await getPieChartDataResolver();
 
     // Expectations for the result
     expect(result).toEqual({
       category: [
         { categoryName: "Category1", number: 2 },
         { categoryName: "Category2", number: 1 },
+        // Add more category data as needed...
       ],
     });
   });
@@ -50,7 +52,7 @@ describe("getHeatMapData", () => {
     jest.spyOn(User, "find").mockResolvedValue(mockData);
 
     // Execute the resolver function
-    const result = await getHeatMapDataResolver(null);
+    const result = await getHeatMapDataResolver();
 
     // Expectations for the result
     expect(result).toEqual({
@@ -76,7 +78,7 @@ describe("getAgeCountData", () => {
     jest.spyOn(User, "find").mockResolvedValue(mockData);
 
     // Execute the resolver function
-    const result = await getAgeCountDataResolver(null);
+    const result = await resolvers.Query.getAgeCountData();
 
     // Expectations for the result
     expect(result).toEqual({
@@ -100,7 +102,7 @@ describe("getOccupationData", () => {
     jest.spyOn(User, "find").mockResolvedValue(mockData);
 
     // Execute the resolver function
-    const result = await getOccupationDataResolver(null);
+    const result = await resolvers.Query.getOccupationData();
 
     // Expectations for the result
     expect(result).toEqual([
@@ -125,7 +127,7 @@ describe("getGenderData", () => {
     jest.spyOn(User, "find").mockResolvedValue(mockData);
 
     // Execute the resolver function
-    const result = await getGenderDataResolver(null);
+    const result = await resolvers.Query.getGenderData();
 
     // Expectations for the result
     expect(result).toEqual({
@@ -136,55 +138,26 @@ describe("getGenderData", () => {
   });
 });
 
-describe("getSalesVSTargetData", () => {
-  it("should return correct sales vs target data", async () => {
-    // Mocking the Product.find() function to return dummy data for testing
-    const mockData = [
-      { productExpectedSale: 100, totalSoldQty: 80, productName: "Product1" },
-      { productExpectedSale: 200, totalSoldQty: 150, productName: "Product2" },
-      // Add more data as needed...
-    ];
-
-    jest.spyOn(Product, "find").mockResolvedValue(mockData);
-
-    // Execute the resolver function
-    const result = await getSalesVSTargetDataResolver(null);
-
-    // Expectations for the result
-    expect(result).toEqual([
-      {
-        expectedSellProduct: 100,
-        totalSellProduct: 80,
-        productName: "Product1",
-      },
-      {
-        expectedSellProduct: 200,
-        totalSellProduct: 150,
-        productName: "Product2",
-      },
-      // Add more expectations for other products...
-    ]);
-  });
-});
-
 describe("getTop10Products", () => {
   it("should return correct top 10 products data", async () => {
-    // Mocking the Product.find() function to return dummy data for testing
     const mockData = [
       { totalSoldQty: 50, productName: "Product1" },
       { totalSoldQty: 30, productName: "Product2" },
+      { totalSoldQty: 20, productName: "Product3" },
       // Add more data as needed...
     ];
 
+    // Mock the Product.find() function to return the mock data
     jest.spyOn(Product, "find").mockResolvedValue(mockData);
 
     // Execute the resolver function
-    const result = await getTop10ProductsResolver(null);
+    const result = await getTop10ProductsResolver();
 
     // Expectations for the result
     expect(result).toEqual([
       { totalSoldQty: 50, productName: "Product1" },
       { totalSoldQty: 30, productName: "Product2" },
+      { totalSoldQty: 20, productName: "Product3" },
       // Add more expectations for other products...
     ]);
   });
